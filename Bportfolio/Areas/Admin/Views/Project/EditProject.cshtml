@@ -1,0 +1,151 @@
+@model Project
+@{
+    var imagePath = string.IsNullOrWhiteSpace(Model.ImageUrl)
+        ? string.Empty
+        : Url.Content("~/img/projects/" + Model.ImageUrl);
+}
+
+<main class="page-content-area projects-page">
+    <div class="content-header-row">
+        <div>
+            <div class="projects-eyebrow"><i class="bi bi-grid-1x2"></i> PORTFOLYO İÇERİĞİ</div>
+            <h1 class="page-title">Projeyi Düzenle</h1>
+            <p class="page-subtitle">Proje bilgilerini ve görsel dosyasını güncelleyin.</p>
+        </div>
+        <a asp-area="Admin" asp-controller="Project" asp-action="ProjectList" class="btn-pastel-secondary">
+            <i class="bi bi-arrow-left"></i>
+            <span>Projelere dön</span>
+        </a>
+    </div>
+
+    <form asp-area="Admin" asp-controller="Project" asp-action="EditProject" method="post">
+        @Html.AntiForgeryToken()
+        <input asp-for="ProjectId" type="hidden">
+        <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+        <div class="row g-4 align-items-start">
+            <div class="col-xl-7">
+                <section class="data-table-card p-4 p-lg-5">
+                    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                        <div class="stat-icon-wrapper icon-green"><i class="bi bi-pencil-square"></i></div>
+                        <div>
+                            <h2 class="h5 mb-1">Proje bilgileri</h2>
+                            <p class="text-secondary small mb-0">#@Model.ProjectId numaralı kaydı düzenliyorsunuz.</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="ProjectTitle" class="form-label-custom">Proje adı <span class="required-star">*</span></label>
+                        <input asp-for="ProjectTitle" class="form-control-custom" maxlength="200" placeholder="Proje adını girin" required>
+                        <span asp-validation-for="ProjectTitle" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="CategoryId" class="form-label-custom">Kategori <span class="required-star">*</span></label>
+                        <select asp-for="CategoryId" asp-items="ViewBag.categories" class="form-control-custom" required>
+                            <option value="0">Kategori seçin</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label-custom">Açıklama <span class="required-star">*</span></label>
+                        <textarea asp-for="Description" class="form-control-custom" rows="6" placeholder="Proje hakkında kısa bir açıklama yazın" required></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-check form-switch mb-4">
+                        <input asp-for="IsActive" class="form-check-input" role="switch">
+                        <label asp-for="IsActive" class="form-check-label">Portfolyoda aktif göster</label>
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-end gap-2 pt-3 border-top">
+                        <a asp-area="Admin" asp-controller="Project" asp-action="ProjectList" class="btn-pastel-secondary">Vazgeç</a>
+                        <button type="submit" class="btn-pastel-primary"><i class="bi bi-check-lg"></i><span>Değişiklikleri kaydet</span></button>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-xl-5">
+                <aside class="data-table-card p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-image text-success"></i>
+                        <h2 class="h6 mb-0">Proje görseli</h2>
+                    </div>
+                    <label asp-for="ImageUrl" class="form-label-custom">Görsel dosya adı</label>
+                    <input asp-for="ImageUrl" type="text" class="form-control-custom" placeholder="p01.jpg" autocomplete="off">
+                    <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                    <p class="text-secondary small mt-2">Yalnızca dosya adını girin. Görsel, wwwroot/img/projects klasöründen yüklenir.</p>
+
+                    <div class="project-image-preview-frame mt-3">
+                        <img id="projectImagePreview" src="@imagePath" alt="@Model.ProjectTitle görsel önizlemesi" hidden="@(string.IsNullOrWhiteSpace(imagePath))">
+                        <div id="projectImagePlaceholder" class="project-image-placeholder" hidden="@(!string.IsNullOrWhiteSpace(Model.ImageUrl))">
+                            <i class="bi bi-image"></i>
+                            <span>Görsel dosya adını girin</span>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </form>
+</main>
+
+<style>
+    .project-image-preview-frame {
+        display: grid;
+        place-items: center;
+        min-height: 220px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: #f7f8f5;
+    }
+
+    .project-image-preview-frame img {
+        display: block;
+        width: 100%;
+        max-height: 360px;
+        object-fit: contain;
+    }
+
+    .project-image-placeholder {
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+        padding: 28px;
+        color: var(--text-secondary);
+        font-size: .8rem;
+        text-align: center;
+    }
+
+    .project-image-placeholder[hidden],
+    .project-image-preview-frame img[hidden] {
+        display: none;
+    }
+</style>
+
+<script>
+    (() => {
+        const imageInput = document.getElementById('ImageUrl');
+        const preview = document.getElementById('projectImagePreview');
+        const placeholder = document.getElementById('projectImagePlaceholder');
+
+        imageInput.addEventListener('input', () => {
+            const fileName = imageInput.value.trim();
+            if (!fileName || fileName.includes('/') || fileName.includes('\\')) {
+                preview.hidden = true;
+                placeholder.hidden = false;
+                return;
+            }
+
+            preview.src = `/img/projects/${encodeURIComponent(fileName)}`;
+            preview.hidden = false;
+            placeholder.hidden = true;
+        });
+
+        preview.addEventListener('error', () => {
+            preview.hidden = true;
+            placeholder.hidden = false;
+        });
+    })();
+</script>

@@ -1,0 +1,150 @@
+@model List<Project>
+
+<main class="page-content-area projects-page">
+	<div class="content-header-row">
+		<div>
+			<div class="projects-eyebrow"><i class="bi bi-grid-1x2"></i> PORTFOLYO İÇERİĞİ</div>
+			<h1 class="page-title">Projelerim</h1>
+			<p class="page-subtitle">Portfolyonuzdaki projeleri ve kategorilerini görüntüleyin.</p>
+		</div>
+	</div>
+
+	<section class="projects-summary" aria-label="Proje özeti">
+		<div class="projects-summary-item">
+			<div class="projects-summary-icon projects-icon-green"><i class="bi bi-window-stack"></i></div>
+			<div><span>Toplam proje</span><strong>@ViewBag.projectCount</strong></div>
+		</div>
+		<div class="projects-summary-item">
+			<div class="projects-summary-icon projects-icon-blue"><i class="bi bi-collection"></i></div>
+			<div><span>Kategori</span><strong>@ViewBag.categoryCount</strong></div>
+		</div>
+	</section>
+
+	<section class="projects-list-panel" aria-labelledby="projectsListTitle">
+		<div class="projects-panel-heading">
+			<div>
+				<h2 id="projectsListTitle">Proje listesi</h2>
+				<p>Projelerinizi ve kayıtlı görsellerini buradan yönetin.</p>
+			</div>
+		</div>
+		<div class="projects-table-scroll">
+			<table class="projects-table">
+				<thead>
+					<tr>
+						<th scope="col" class="projects-id-column">#</th>
+						<th scope="col">Proje</th>
+						<th scope="col" class="projects-category-column">Kategori</th>
+						<th scope="col">Durum</th>
+						<th scope="col" class="projects-description-column">Açıklama</th>
+						<th scope="col" style="text-align: right;">İşlemler</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var item in Model)
+					{
+						var imagePath = string.IsNullOrWhiteSpace(item.ImageUrl)
+							? null
+							: Url.Content("~/img/projects/" + item.ImageUrl);
+
+						<tr>
+							<td class="projects-id">@item.ProjectId</td>
+							<td>
+								<div class="projects-title-cell">
+									@if (imagePath != null)
+									{
+										<img class="project-image-thumbnail" src="@imagePath" alt="@item.ProjectTitle" loading="lazy">
+									}
+									else
+									{
+										<div class="projects-item-icon"><i class="bi bi-braces-asterisk"></i></div>
+									}
+									<div class="projects-title-copy">
+										<strong>@item.ProjectTitle</strong>
+									</div>
+								</div>
+							</td>
+							<td><span class="projects-category-badge">@item.Category.CategoryName</span></td>
+							<td><span class="status-pill @(item.IsActive ? "status-active" : "status-passive")">@(item.IsActive ? "Aktif" : "Pasif")</span></td>
+							<td class="projects-description">@item.Description</td>
+							<td style="text-align: right;">
+								<div class="row-actions-group justify-content-end">
+									<a asp-area="Admin" asp-controller="Project" asp-action="EditProject" asp-route-id="@item.ProjectId"
+									   class="btn-action-icon btn-edit" title="Düzenle" aria-label="@item.ProjectTitle projesini düzenle">
+										<i class="bi bi-pencil-square" aria-hidden="true"></i>
+									</a>
+									<button type="button" class="btn-action-icon btn-delete js-delete-project" title="Sil"
+									        aria-label="@item.ProjectTitle projesini sil" data-project-id="@item.ProjectId"
+									        data-project-title="@item.ProjectTitle">
+										<i class="bi bi-trash3" aria-hidden="true"></i>
+									</button>
+								</div>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</section>
+</main>
+
+<div class="modal-overlay project-delete-overlay" aria-hidden="true">
+	<div class="modal-dialog-box" role="dialog" aria-modal="true" aria-label="Proje silme onayı" style="max-width: 460px;">
+		<div class="p-4">
+			<h2 class="h5 mb-2">Projeyi Sil</h2>
+			<p class="mb-0"><strong class="delete-project-title"></strong> adlı projeyi silmek istiyor musunuz?</p>
+		</div>
+		<form asp-area="Admin" asp-controller="Project" asp-action="DeleteProject" method="post" class="d-flex justify-content-end gap-2 border-top p-3">
+			@Html.AntiForgeryToken()
+			<input type="hidden" name="id" class="delete-project-id">
+			<button type="button" class="btn-pastel-secondary cancel-project-delete">Hayır</button>
+			<button type="submit" class="btn btn-danger">Evet</button>
+		</form>
+	</div>
+</div>
+
+<script>
+	(() => {
+		const overlay = document.querySelector('.project-delete-overlay');
+		const title = overlay.querySelector('.delete-project-title');
+		const idInput = overlay.querySelector('.delete-project-id');
+		const cancelButton = overlay.querySelector('.cancel-project-delete');
+		let activeTrigger;
+
+		const closeDialog = () => {
+			overlay.classList.remove('show');
+			overlay.setAttribute('aria-hidden', 'true');
+			activeTrigger?.focus();
+		};
+
+		document.querySelectorAll('.js-delete-project').forEach((trigger) => {
+			trigger.addEventListener('click', () => {
+				activeTrigger = trigger;
+				title.textContent = trigger.dataset.projectTitle;
+				idInput.value = trigger.dataset.projectId;
+				overlay.classList.add('show');
+			overlay.setAttribute('aria-hidden', 'false');
+				cancelButton.focus();
+			});
+		});
+
+		cancelButton.addEventListener('click', closeDialog);
+		overlay.addEventListener('click', (event) => {
+			if (event.target === overlay) closeDialog();
+		});
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape' && overlay.classList.contains('show')) closeDialog();
+		});
+	})();
+</script>
+
+<style>
+	.project-image-thumbnail {
+		width: 56px;
+		height: 42px;
+		flex: 0 0 56px;
+		object-fit: cover;
+		border: 1px solid var(--projects-line);
+		border-radius: 6px;
+		background: #f7f8f5;
+	}
+</style>

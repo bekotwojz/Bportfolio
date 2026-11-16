@@ -1,0 +1,42 @@
+@model Message
+
+<div class="container-fluid py-3">
+    <div class="card msg-card">
+        <div class="card-header">
+            <h4 class="mb-0">Yeni Mesaj</h4>
+            <small class="text-muted">Mesaj bilgilerini doldurup gönderin.</small>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="SenderName" class="form-label">Ad Soyad</label>
+                        <input asp-for="SenderName" class="form-control" placeholder="Adınız Soyadınız" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="SenderEmail" class="form-label">E-posta</label>
+                        <input asp-for="SenderEmail" type="email" class="form-control" placeholder="ornek@mail.com" required />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Subject" class="form-label">Konu</label>
+                    <input asp-for="Subject" class="form-control" placeholder="Mesajın konusu" required />
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="MessageDetail" class="form-label">Mesaj</label>
+                    <textarea asp-for="MessageDetail" class="form-control" rows="6" placeholder="Mesajınızı yazın..." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-light">Vazgeç</a>
+                    <button type="submit" class="btn btn-primary px-4">Gönder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+

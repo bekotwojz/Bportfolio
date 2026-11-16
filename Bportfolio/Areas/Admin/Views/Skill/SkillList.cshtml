@@ -1,0 +1,153 @@
+@model List<Skill>
+@{
+	var skills = Model ?? new List<Skill>();
+	var itemCount = skills.Sum(skill => skill.SkillItems?.Count ?? 0);
+}
+
+<main class="page-content-area skill-page">
+	<div class="content-header-row">
+		<div>
+			<div class="projects-eyebrow"><i class="bi bi-lightning-charge"></i> PORTFOLYO İÇERİĞİ</div>
+			<h1 class="page-title">Yeteneklerim</h1>
+			<p class="page-subtitle">Yetenek gruplarınızı ve her gruptaki becerileri yönetin.</p>
+		</div>
+		<div class="skill-header-count"><i class="bi bi-layers"></i><span>@skills.Count grup · @itemCount yetenek</span></div>
+	</div>
+
+	<div class="stats-row skill-stats">
+		<div class="stat-card">
+			<div class="stat-icon-wrapper icon-green"><i class="bi bi-collection"></i></div>
+			<div class="stat-content"><span class="stat-label">Yetenek Grubu</span><h3 class="stat-value">@skills.Count</h3></div>
+		</div>
+		<div class="stat-card">
+			<div class="stat-icon-wrapper icon-blue"><i class="bi bi-lightning"></i></div>
+			<div class="stat-content"><span class="stat-label">Alt Yetenek</span><h3 class="stat-value">@itemCount</h3></div>
+		</div>
+		<div class="stat-card">
+			<div class="stat-icon-wrapper icon-beige"><i class="bi bi-card-text"></i></div>
+			<div class="stat-content"><span class="stat-label">Açıklamalı Grup</span><h3 class="stat-value">@skills.Count(skill => !string.IsNullOrWhiteSpace(skill.Description))</h3></div>
+		</div>
+	</div>
+
+	<section class="data-table-card" aria-labelledby="skillListHeading">
+		<div class="table-filter-bar">
+			<div class="filters-left-group">
+				<label class="filter-search-box" for="skillSearch">
+					<i class="bi bi-search"></i>
+					<input id="skillSearch" type="search" placeholder="Yetenek grubu veya beceri ara..." autocomplete="off">
+				</label>
+				<select class="filter-select" id="skillSort" aria-label="Yetenekleri sırala">
+					<option value="title-asc">Başlık (A-Z)</option>
+					<option value="title-desc">Başlık (Z-A)</option>
+					<option value="items-desc">Alt yetenek sayısı</option>
+				</select>
+			</div>
+			<div class="filters-right-group">
+				<span class="skill-list-heading" id="skillListHeading">Yetenek grupları</span>
+			</div>
+		</div>
+
+		<div class="table-responsive-wrapper">
+			<table class="custom-admin-table" id="skillTable">
+				<thead>
+					<tr>
+						<th style="width: 70px;">ID</th>
+						<th>Yetenek grubu</th>
+						<th>Açıklama</th>
+						<th>Alt yetenekler</th>
+						<th style="width: 90px; text-align: right;">İşlem</th>
+					</tr>
+				</thead>
+				<tbody id="skillTableBody">
+					@foreach (var skill in skills)
+					{
+						<tr data-skill-row data-title="@skill.Title" data-items="@(skill.SkillItems?.Count ?? 0)">
+							<td class="col-id">#@skill.SkillId.ToString("D2")</td>
+							<td>
+								<div class="experience-title-cell">
+									<div class="exp-icon-bullet"><i class="bi bi-lightning-charge"></i></div>
+									<div class="skill-title-cell">
+										<span class="exp-title-text">@skill.Title</span>
+										@if (!string.IsNullOrWhiteSpace(skill.IconUrl))
+										{
+											<small>@skill.IconUrl</small>
+										}
+									</div>
+								</div>
+							</td>
+							<td class="skill-description-cell">@(string.IsNullOrWhiteSpace(skill.Description) ? "Açıklama eklenmemiş" : skill.Description)</td>
+							<td>
+								@if (skill.SkillItems?.Count > 0)
+								{
+									<div class="skill-item-chips">
+										@foreach (var item in skill.SkillItems)
+										{
+											<span>@item.SkillItemTitle</span>
+										}
+									</div>
+								}
+								else
+								{
+									<span class="text-secondary small">Alt yetenek eklenmemiş</span>
+								}
+							</td>
+							<td style="text-align: right;">
+								<a asp-area="Admin" asp-controller="Skill" asp-action="EditSkill" asp-route-id="@skill.SkillId"
+								   class="btn-action-icon btn-edit" title="Yetenek grubunu düzenle" aria-label="@skill.Title grubunu düzenle">
+									<i class="bi bi-pencil-square"></i>
+								</a>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			<div class="skill-empty-state" id="skillEmptyState" @(skills.Count > 0 ? "hidden" : null)>
+				<div class="exp-icon-bullet"><i class="bi bi-lightning-charge"></i></div>
+				<strong id="skillEmptyTitle">Henüz yetenek grubu yok</strong>
+				<span id="skillEmptyDescription">Yetenek grupları eklendiğinde bu listede gösterilir.</span>
+			</div>
+		</div>
+		<div class="table-footer-area">
+			<div class="pagination-counter">Gösterilen <strong id="skillResultCount">@skills.Count</strong> / <strong>@skills.Count</strong> grup</div>
+		</div>
+	</section>
+</main>
+
+<script>
+	(() => {
+		const search = document.getElementById('skillSearch');
+		const sort = document.getElementById('skillSort');
+		const body = document.getElementById('skillTableBody');
+		const resultCount = document.getElementById('skillResultCount');
+		const emptyState = document.getElementById('skillEmptyState');
+		const emptyTitle = document.getElementById('skillEmptyTitle');
+		const emptyDescription = document.getElementById('skillEmptyDescription');
+		const rows = Array.from(body.querySelectorAll('[data-skill-row]'));
+		const normalize = (value) => value.toLocaleLowerCase('tr-TR').trim();
+
+		const updateList = () => {
+			const query = normalize(search.value);
+			const sortedRows = [...rows].sort((first, second) => {
+				if (sort.value === 'title-desc') return normalize(second.dataset.title || '').localeCompare(normalize(first.dataset.title || ''), 'tr');
+				if (sort.value === 'items-desc') return Number(second.dataset.items) - Number(first.dataset.items);
+				return normalize(first.dataset.title || '').localeCompare(normalize(second.dataset.title || ''), 'tr');
+			});
+
+			let visible = 0;
+			sortedRows.forEach((row) => {
+				row.hidden = !normalize(row.textContent).includes(query);
+				if (!row.hidden) visible++;
+				body.appendChild(row);
+			});
+
+			resultCount.textContent = visible;
+			emptyState.hidden = visible > 0;
+			emptyTitle.textContent = rows.length ? 'Eşleşen yetenek grubu bulunamadı' : 'Henüz yetenek grubu yok';
+			emptyDescription.textContent = rows.length ? 'Arama ifadenizi değiştirebilirsiniz.' : 'Yetenek grupları eklendiğinde bu listede gösterilir.';
+		};
+
+		search.addEventListener('input', updateList);
+		sort.addEventListener('change', updateList);
+		updateList();
+	})();
+</script>

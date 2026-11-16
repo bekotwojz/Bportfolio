@@ -1,0 +1,44 @@
+@using Bportfolio.Entities
+@model Message
+
+<main class="page-content-area">
+    <div class="content-header-row">
+        <div>
+            <div class="projects-eyebrow"><i class="bi bi-envelope-open"></i> PORTFOLYO İLETİŞİMİ</div>
+            <h1 class="page-title">Mesaj Detayı</h1>
+            <p class="page-subtitle">Ziyaretçiden gelen mesajın içeriği.</p>
+        </div>
+        <a asp-area="Admin" asp-controller="Message" asp-action="MessageList" class="btn-pastel-secondary">
+            <i class="bi bi-arrow-left"></i>
+            <span>Gelen kutusuna dön</span>
+        </a>
+    </div>
+
+    <section class="data-table-card p-4 p-lg-5">
+        <div class="d-flex align-items-start justify-content-between gap-3 border-bottom pb-4">
+            <div>
+                <span class="about-section-kicker">KONU</span>
+                <h2 class="h4 mb-0 mt-2">@Model.Subject</h2>
+            </div>
+            <span class="status-pill status-active">Okundu</span>
+        </div>
+        <dl class="row g-3 py-4 mb-0 border-bottom">
+            <div class="col-md-6">
+                <dt class="text-secondary small">Gönderen</dt>
+                <dd class="mb-0 fw-semibold">@Model.SenderName</dd>
+            </div>
+            <div class="col-md-6">
+                <dt class="text-secondary small">E-posta</dt>
+                <dd class="mb-0"><a href="mailto:@Model.SenderEmail">@Model.SenderEmail</a></dd>
+            </div>
+            <div class="col-12">
+                <dt class="text-secondary small">Gönderim tarihi</dt>
+                <dd class="mb-0">@Model.SendDate.ToString("dd MMMM yyyy, HH:mm")</dd>
+            </div>
+        </dl>
+        <div class="pt-4">
+            <h3 class="h6 mb-3">Mesaj</h3>
+            <p class="mb-0" style="white-space: pre-wrap;">@Model.MessageDetail</p>
+        </div>
+    </section>
+</main>

@@ -1,0 +1,229 @@
+@model DashboardViewModel
+@{
+    var maxCategoryCount = Model.CategorySummaries.Count == 0
+        ? 1
+        : Model.CategorySummaries.Max(category => category.ProjectCount);
+}
+
+<main class="page-content-area dashboard-page">
+    <div class="content-header-row">
+        <div>
+            <div class="projects-eyebrow"><i class="bi bi-grid-1x2"></i> YÖNETİM ÖZETİ</div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-subtitle">Portfolyo içeriklerinizin güncel durumu.</p>
+        </div>
+        <div class="dashboard-quick-links">
+            <a asp-area="Admin" asp-controller="Project" asp-action="ProjectList" class="btn-pastel-primary"><i class="bi bi-folder-plus"></i><span>Projeleri Yönet</span></a>
+            <a asp-area="Admin" asp-controller="Message" asp-action="MessageList" class="btn-pastel-secondary"><i class="bi bi-inbox"></i><span>Mesajları Gör</span></a>
+        </div>
+    </div>
+
+    <section class="dashboard-stat-grid" aria-label="İçerik istatistikleri">
+        <a asp-area="Admin" asp-controller="Project" asp-action="ProjectList" class="dashboard-stat">
+            <span class="dashboard-stat-icon green"><i class="bi bi-window-stack"></i></span>
+            <span class="dashboard-stat-label">Toplam proje</span>
+            <strong>@Model.TotalProjects</strong>
+        </a>
+        <a asp-area="Admin" asp-controller="Project" asp-action="ProjectList" class="dashboard-stat">
+            <span class="dashboard-stat-icon blue"><i class="bi bi-check2-circle"></i></span>
+            <span class="dashboard-stat-label">Aktif proje</span>
+            <strong>@Model.ActiveProjects</strong>
+        </a>
+        <a asp-area="Admin" asp-controller="Skill" asp-action="SkillList" class="dashboard-stat">
+            <span class="dashboard-stat-icon sage"><i class="bi bi-lightning-charge"></i></span>
+            <span class="dashboard-stat-label">Yetenek grubu</span>
+            <strong>@Model.SkillGroups</strong>
+        </a>
+        <a asp-area="Admin" asp-controller="Experience" asp-action="ExperienceList" class="dashboard-stat">
+            <span class="dashboard-stat-icon beige"><i class="bi bi-briefcase"></i></span>
+            <span class="dashboard-stat-label">Deneyim</span>
+            <strong>@Model.Experiences</strong>
+        </a>
+        <a asp-area="Admin" asp-controller="Education" asp-action="EducationList" class="dashboard-stat">
+            <span class="dashboard-stat-icon blue"><i class="bi bi-mortarboard"></i></span>
+            <span class="dashboard-stat-label">Eğitim</span>
+            <strong>@Model.Educations</strong>
+        </a>
+        <a asp-area="Admin" asp-controller="Message" asp-action="MessageList" class="dashboard-stat">
+            <span class="dashboard-stat-icon sage"><i class="bi bi-envelope"></i></span>
+            <span class="dashboard-stat-label">Toplam mesaj</span>
+            <strong>@Model.TotalMessages</strong>
+        </a>
+        <a asp-area="Admin" asp-controller="Message" asp-action="MessageList" class="dashboard-stat">
+            <span class="dashboard-stat-icon rose"><i class="bi bi-envelope-exclamation"></i></span>
+            <span class="dashboard-stat-label">Okunmamış mesaj</span>
+            <strong>@Model.UnreadMessages</strong>
+        </a>
+    </section>
+
+    <div class="dashboard-panel-grid">
+        <section class="dashboard-panel" aria-labelledby="categorySummaryTitle">
+            <div class="dashboard-panel-heading">
+                <div>
+                    <h2 id="categorySummaryTitle">Kategori özeti</h2>
+                    <p>Projelerin kategorilere göre dağılımı.</p>
+                </div>
+                <i class="bi bi-collection"></i>
+            </div>
+            @if (Model.CategorySummaries.Count == 0)
+            {
+                <p class="dashboard-empty">Henüz kategorili proje yok.</p>
+            }
+            else
+            {
+                <div class="dashboard-category-list">
+                    @foreach (var category in Model.CategorySummaries)
+                    {
+                        var barWidth = category.ProjectCount * 100 / maxCategoryCount;
+                        <div class="dashboard-category-row">
+                            <div class="dashboard-category-label"><span>@category.CategoryName</span><strong>@category.ProjectCount</strong></div>
+                            <div class="dashboard-category-track"><span style="width: @(barWidth)%"></span></div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="dashboard-panel" aria-labelledby="recentProjectsTitle">
+            <div class="dashboard-panel-heading">
+                <div>
+                    <h2 id="recentProjectsTitle">Son eklenen projeler</h2>
+                    <p>En son kaydedilen üç proje.</p>
+                </div>
+                <a asp-area="Admin" asp-controller="Project" asp-action="ProjectList" aria-label="Tüm projeleri gör"><i class="bi bi-arrow-up-right"></i></a>
+            </div>
+            @if (Model.RecentProjects.Count == 0)
+            {
+                <p class="dashboard-empty">Henüz proje eklenmemiş.</p>
+            }
+            else
+            {
+                <div class="dashboard-recent-projects">
+                    @foreach (var project in Model.RecentProjects)
+                    {
+                        <a asp-area="Admin" asp-controller="Project" asp-action="EditProject" asp-route-id="@project.ProjectId" class="dashboard-project-row">
+                            <span class="dashboard-project-mark"><i class="bi bi-braces-asterisk"></i></span>
+                            <span class="dashboard-project-copy"><strong>@project.ProjectTitle</strong><small>@project.Category?.CategoryName</small></span>
+                            <span class="status-pill @(project.IsActive ? "status-active" : "status-passive")">@(project.IsActive ? "Aktif" : "Pasif")</span>
+                        </a>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+
+    <section class="dashboard-panel dashboard-skills-panel" aria-labelledby="skillLevelsTitle">
+        <div class="dashboard-panel-heading">
+            <div>
+                <h2 id="skillLevelsTitle">Yetenek seviyeleri</h2>
+                <p>Teknolojilere göre kişisel seviye dağılımı.</p>
+            </div>
+            <a asp-area="Admin" asp-controller="Skill" asp-action="SkillList" aria-label="Yetenekleri yönet"><i class="bi bi-arrow-up-right"></i></a>
+        </div>
+        @if (Model.TechnologyLevels.Count == 0)
+        {
+            <p class="dashboard-empty">Teknoloji seviyesi tanımlanmamış.</p>
+        }
+        else
+        {
+            <div class="dashboard-skill-grid">
+                @foreach (var technology in Model.TechnologyLevels)
+                {
+                    <article class="dashboard-skill-item">
+                        <div class="dashboard-skill-donut" style="--skill-level: @technology.Percentage%"
+                             role="img" aria-label="@technology.Name: yüzde @technology.Percentage">
+                            <span>@technology.Percentage%</span>
+                        </div>
+                        <strong>@technology.Name</strong>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="dashboard-panel dashboard-messages-panel" aria-labelledby="recentMessagesTitle">
+        <div class="dashboard-panel-heading">
+            <div>
+                <h2 id="recentMessagesTitle">Son 5 mesaj</h2>
+                <p>En son gelen mesajlar ve okunma durumları.</p>
+            </div>
+            <a asp-area="Admin" asp-controller="Message" asp-action="MessageList" class="dashboard-all-link">Gelen kutusuna git <i class="bi bi-arrow-right"></i></a>
+        </div>
+        @if (Model.RecentMessages.Count == 0)
+        {
+            <p class="dashboard-empty">Henüz mesaj bulunmuyor.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table dashboard-message-table align-middle mb-0">
+                    <thead>
+                        <tr><th>Gönderen</th><th>Konu</th><th>Tarih</th><th>Durum</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var message in Model.RecentMessages)
+                        {
+                            <tr class="@(message.IsRead ? string.Empty : "dashboard-message-unread")">
+                                <td>@message.SenderName</td>
+                                <td>@message.Subject</td>
+                                <td>@message.SendDate.ToString("dd MMM yyyy, HH:mm")</td>
+                                <td><span class="status-pill @(message.IsRead ? "status-active" : "status-passive")">@(message.IsRead ? "Okundu" : "Okunmadı")</span></td>
+                                <td><a asp-area="Admin" asp-controller="Message" asp-action="MessageDetail" asp-route-id="@message.MessageId" class="btn-action-icon btn-edit" title="Mesajı aç" aria-label="@message.Subject mesajını aç"><i class="bi bi-arrow-up-right"></i></a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</main>
+
+<style>
+    .dashboard-page { --dashboard-line: var(--border-color, #E7E4DD); --dashboard-muted: var(--text-secondary, #707772); --dashboard-green: #527565; }
+    .dashboard-quick-links { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dashboard-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .dashboard-stat { display: grid; grid-template-columns: 38px 1fr; align-items: center; column-gap: 11px; row-gap: 3px; min-width: 0; padding: 14px; border: 1px solid var(--dashboard-line); border-radius: 8px; background: var(--bg-card, #fff); color: inherit; text-decoration: none; transition: border-color .15s ease, transform .15s ease; }
+    .dashboard-stat:hover { border-color: #9BB7A2; transform: translateY(-1px); color: inherit; }
+    .dashboard-stat-icon { grid-row: span 2; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 8px; }
+    .dashboard-stat-icon.green { background: #EEF4EF; color: #527565; }
+    .dashboard-stat-icon.blue { background: #EBF2F7; color: #58758D; }
+    .dashboard-stat-icon.sage { background: #E8F0EC; color: #426B59; }
+    .dashboard-stat-icon.beige { background: #F4EEE8; color: #98795E; }
+    .dashboard-stat-icon.rose { background: #F8ECEA; color: #A56B63; }
+    .dashboard-stat-label { overflow: hidden; color: var(--dashboard-muted); font-size: .73rem; text-overflow: ellipsis; white-space: nowrap; }
+    .dashboard-stat strong { font-size: 1.2rem; line-height: 1.15; }
+    .dashboard-panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; margin-bottom: 16px; }
+    .dashboard-panel { min-width: 0; padding: 18px; border: 1px solid var(--dashboard-line); border-radius: 8px; background: var(--bg-card, #fff); }
+    .dashboard-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+    .dashboard-panel-heading h2 { margin: 0 0 4px; font-size: .95rem; font-weight: 700; }
+    .dashboard-panel-heading p { margin: 0; color: var(--dashboard-muted); font-size: .73rem; }
+    .dashboard-panel-heading > i, .dashboard-panel-heading > a { color: var(--dashboard-green); }
+    .dashboard-category-list, .dashboard-recent-projects { display: grid; gap: 13px; }
+    .dashboard-category-label { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 5px; font-size: .76rem; }
+    .dashboard-category-label strong { font-variant-numeric: tabular-nums; }
+    .dashboard-category-track { height: 6px; overflow: hidden; border-radius: 99px; background: #EEF1ED; }
+    .dashboard-category-track span { display: block; height: 100%; border-radius: inherit; background: #789685; }
+    .dashboard-skills-panel { margin-bottom: 16px; }
+    .dashboard-skill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 18px 12px; }
+    .dashboard-skill-item { display: grid; justify-items: center; gap: 5px; min-width: 0; text-align: center; }
+    .dashboard-skill-donut { position: relative; width: 82px; height: 82px; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(#789685 0 var(--skill-level), #E8ECE8 var(--skill-level) 100%); }
+    .dashboard-skill-donut::before { position: absolute; inset: 7px; border-radius: 50%; background: var(--bg-card, #fff); content: ""; }
+    .dashboard-skill-donut span { position: relative; color: var(--dashboard-green); font-size: .88rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .dashboard-skill-item > strong { max-width: 100%; overflow-wrap: anywhere; font-size: .76rem; }
+    .dashboard-project-row { display: flex; align-items: center; gap: 10px; min-width: 0; color: inherit; text-decoration: none; }
+    .dashboard-project-row:hover .dashboard-project-copy strong { color: var(--dashboard-green); }
+    .dashboard-project-mark { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 7px; background: #EEF4EF; color: var(--dashboard-green); }
+    .dashboard-project-copy { display: grid; flex: 1; min-width: 0; }
+    .dashboard-project-copy strong, .dashboard-project-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dashboard-project-copy strong { font-size: .77rem; }
+    .dashboard-project-copy small { color: var(--dashboard-muted); font-size: .68rem; }
+    .dashboard-project-row .status-pill { flex: 0 0 auto; }
+    .dashboard-all-link { color: var(--dashboard-green); font-size: .75rem; text-decoration: none; }
+    .dashboard-message-table { font-size: .76rem; }
+    .dashboard-message-table thead th { color: var(--dashboard-muted); font-size: .68rem; font-weight: 650; white-space: nowrap; }
+    .dashboard-message-unread td { background: #F5F7F5; font-weight: 600; }
+    .dashboard-empty { margin: 0; padding: 20px 0; color: var(--dashboard-muted); font-size: .78rem; text-align: center; }
+    @@media (max-width: 767.98px) { .dashboard-panel-grid { grid-template-columns: 1fr; } .dashboard-quick-links { width: 100%; } }
+</style>
+
+

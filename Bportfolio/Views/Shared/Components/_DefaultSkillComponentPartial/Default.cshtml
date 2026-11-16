@@ -1,0 +1,64 @@
+@using Bportfolio.Entities
+@model List<Skill>
+
+<section id="skills">
+    <div class="container">
+        <div class="section-header text-center mx-auto reveal-on-scroll" style="max-width: 680px;">
+            <div class="eyebrow-badge"><i class="bi bi-stack"></i> TEKNOLOJİ YIĞINIM</div>
+            <h2 class="section-title">Kullandığım Teknolojiler ve Uzmanlık Alanlarım</h2>
+            <p class="section-description mx-auto">Çalıştığım teknoloji ve uzmanlık alanları.</p>
+        </div>
+
+        @if (Model.Count == 0)
+        {
+            <p class="text-center text-muted">Henüz yetenek bilgisi eklenmemiş.</p>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var skill in Model)
+                {
+                    var iconValue = skill.IconUrl?.Trim();
+                    var isIconPath = !string.IsNullOrWhiteSpace(iconValue) && iconValue.Contains('/');
+                    var iconPath = isIconPath
+                        ? Url.Content(iconValue!.StartsWith("~/") ? iconValue : "~/" + iconValue.TrimStart('/'))
+                        : null;
+                    var iconClass = string.IsNullOrWhiteSpace(iconValue) || isIconPath
+                        ? "bi bi-lightning-charge"
+                        : iconValue.StartsWith("bi-")
+                            ? "bi " + iconValue
+                            : iconValue;
+
+                    <div class="col-md-6 col-lg-4 reveal-on-scroll">
+                        <article class="skill-card">
+                            <div class="skill-icon-box">
+                                @if (iconPath != null)
+                                {
+                                    <img src="@iconPath" alt="@skill.Title simgesi" loading="lazy">
+                                }
+                                else
+                                {
+                                    <i class="@iconClass" aria-hidden="true"></i>
+                                }
+                            </div>
+                            <h3 class="h5 fw-bold mb-2">@skill.Title</h3>
+                            @if (!string.IsNullOrWhiteSpace(skill.Description))
+                            {
+                                <p class="text-muted small mb-4">@skill.Description</p>
+                            }
+                            @if (skill.SkillItems.Count > 0)
+                            {
+                                <div class="d-flex flex-wrap">
+                                    @foreach (var item in skill.SkillItems)
+                                    {
+                                        <span class="tech-badge">@item.SkillItemTitle</span>
+                                    }
+                                </div>
+                            }
+                        </article>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

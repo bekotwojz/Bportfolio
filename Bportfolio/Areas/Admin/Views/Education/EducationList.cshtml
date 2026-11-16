@@ -1,0 +1,314 @@
+@model List<Education>
+@{
+	var educations = Model ?? new List<Education>();
+	var activeCount = educations.Count(item => item.IsActive);
+	var inactiveCount = educations.Count - activeCount;
+	var formEducation = ViewBag.FormEducation as Education;
+	var openModal = ViewBag.OpenEducationModal as string;
+}
+
+<main class="page-content-area" data-open-modal="@openModal">
+	<div class="content-header-row">
+		<div>
+			<div class="projects-eyebrow"><i class="bi bi-mortarboard"></i> PORTFOLYO İÇERİĞİ</div>
+			<h1 class="page-title">Eğitim Hayatım</h1>
+			<p class="page-subtitle">Eğitim geçmişinizi ve portfolyonuzda gösterilecek bilgileri yönetin.</p>
+		</div>
+		<div class="header-actions">
+			<button type="button" class="btn-pastel-primary" id="addEducationButton">
+				<i class="bi bi-plus-lg"></i>
+				<span>Yeni Eğitim Ekle</span>
+			</button>
+		</div>
+	</div>
+
+	<div class="stats-row">
+		<div class="stat-card">
+			<div class="stat-icon-wrapper icon-green"><i class="bi bi-mortarboard"></i></div>
+			<div class="stat-content"><span class="stat-label">Toplam Eğitim</span><h3 class="stat-value">@educations.Count</h3></div>
+		</div>
+		<div class="stat-card">
+			<div class="stat-icon-wrapper icon-blue"><i class="bi bi-eye"></i></div>
+			<div class="stat-content"><span class="stat-label">Portfolyoda Aktif</span><h3 class="stat-value">@activeCount</h3></div>
+		</div>
+		<div class="stat-card">
+			<div class="stat-icon-wrapper icon-beige"><i class="bi bi-eye-slash"></i></div>
+			<div class="stat-content"><span class="stat-label">Pasif Kayıt</span><h3 class="stat-value">@inactiveCount</h3></div>
+		</div>
+	</div>
+
+	<section class="data-table-card" aria-labelledby="educationTableTitle">
+		<div class="table-filter-bar">
+			<div class="filters-left-group">
+				<label class="filter-search-box" for="educationSearch">
+					<i class="bi bi-search"></i>
+					<input id="educationSearch" type="search" placeholder="Program veya kurum ara..." autocomplete="off">
+				</label>
+				<select class="filter-select" id="educationStatusFilter" aria-label="Yayın durumuna göre filtrele">
+					<option value="all">Yayın Durumu (Tümü)</option>
+					<option value="active">Aktif</option>
+					<option value="inactive">Pasif</option>
+				</select>
+				<select class="filter-select" id="educationSort" aria-label="Eğitimleri sırala">
+					<option value="program-asc">Program (A-Z)</option>
+					<option value="program-desc">Program (Z-A)</option>
+					<option value="institution-asc">Kurum (A-Z)</option>
+				</select>
+			</div>
+			<div class="filters-right-group">
+				<button type="button" class="btn-table-util" id="resetEducationFilters" title="Filtreleri temizle" aria-label="Filtreleri temizle">
+					<i class="bi bi-arrow-counterclockwise"></i>
+					<span class="d-none d-md-inline">Temizle</span>
+				</button>
+			</div>
+		</div>
+
+		<div class="table-responsive-wrapper">
+			<table class="custom-admin-table" id="educationTable">
+				<thead>
+					<tr>
+						<th style="width: 70px;">ID</th>
+						<th>Eğitim / Program</th>
+						<th>Kurum</th>
+						<th>Açıklama</th>
+						<th>Derece / Durum</th>
+						<th>Yayın</th>
+						<th style="width: 110px; text-align: right;">İşlemler</th>
+					</tr>
+				</thead>
+				<tbody id="educationTableBody">
+					@foreach (var item in educations)
+					{
+						<tr data-education-row data-program="@item.Program" data-institution="@item.InstitutionName" data-status="@item.Status" data-active="@item.IsActive.ToString().ToLowerInvariant()">
+							<td class="col-id">#@item.EducationId.ToString("D2")</td>
+							<td>
+								<div class="experience-title-cell">
+									<div class="exp-icon-bullet"><i class="bi bi-mortarboard"></i></div>
+									<div><span class="exp-title-text">@item.Program</span></div>
+								</div>
+							</td>
+							<td><div class="company-cell"><i class="bi bi-building company-badge-icon"></i><span>@item.InstitutionName</span></div></td>
+							<td class="education-description">@(string.IsNullOrWhiteSpace(item.Description) ? "Açıklama eklenmemiş" : item.Description)</td>
+							<td><span class="work-type-badge">@(string.IsNullOrWhiteSpace(item.Status) ? "Belirtilmedi" : item.Status)</span></td>
+							<td><span class="status-pill @(item.IsActive ? "status-active" : "status-passive")">@(item.IsActive ? "Aktif" : "Pasif")</span></td>
+							<td style="text-align: right;">
+								<div class="row-actions-group justify-content-end">
+									<button type="button" class="btn-action-icon btn-edit js-edit-education" title="Düzenle"
+											data-id="@item.EducationId" data-program="@item.Program" data-institution="@item.InstitutionName"
+											data-description="@item.Description" data-status="@item.Status" data-active="@item.IsActive.ToString().ToLowerInvariant()">
+										<i class="bi bi-pencil-square"></i>
+									</button>
+									<button type="button" class="btn-action-icon btn-delete js-delete-education" title="Sil" aria-label="@item.Program kaydını sil"
+											data-id="@item.EducationId" data-program="@item.Program">
+										<i class="bi bi-trash3"></i>
+									</button>
+								</div>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			<div class="education-empty-state" id="educationEmptyState" @(educations.Count > 0 ? "hidden" : null)>
+				<div class="exp-icon-bullet"><i class="bi bi-mortarboard"></i></div>
+				<strong id="educationEmptyTitle">Henüz eğitim kaydı yok</strong>
+				<span id="educationEmptyText">İlk eğitim kaydınızı ekleyerek başlayın.</span>
+			</div>
+		</div>
+
+		<div class="table-footer-area">
+			<div class="pagination-counter">Toplam <strong id="educationResultCount">@educations.Count</strong> kayıt</div>
+		</div>
+	</section>
+</main>
+
+<div class="modal-overlay" id="educationModal" aria-hidden="true">
+	<div class="modal-dialog-box" role="dialog" aria-modal="true" aria-labelledby="educationModalTitle">
+		<div class="d-flex align-items-start justify-content-between border-bottom p-4">
+			<div>
+				<span class="about-section-kicker">EĞİTİM BİLGİSİ</span>
+				<h2 class="h5 mb-1 mt-1" id="educationModalTitle">Yeni Eğitim Ekle</h2>
+				<p class="text-secondary small mb-0">Eğitim kaydının görünür bilgilerini girin.</p>
+			</div>
+			<button type="button" class="btn-action-icon" id="closeEducationModal" aria-label="Pencereyi kapat"><i class="bi bi-x-lg"></i></button>
+		</div>
+		<form asp-area="Admin" asp-controller="Education" asp-action="SaveEducation" method="post" id="educationForm">
+			@Html.AntiForgeryToken()
+			<input type="hidden" name="EducationId" id="educationId" value="@(formEducation?.EducationId ?? 0)">
+			<div class="p-4">
+				<div asp-validation-summary="All" class="text-danger small mb-3"></div>
+				<div class="mb-3">
+					<label class="form-label-custom" for="educationProgram">Program / Bölüm <span class="required-star">*</span></label>
+					<input class="form-control-custom" id="educationProgram" name="Program" value="@formEducation?.Program" maxlength="200" placeholder="Örn. İnternet ve Bilişim Teknolojileri Yönetimi" required>
+				</div>
+				<div class="mb-3">
+					<label class="form-label-custom" for="educationInstitution">Kurum <span class="required-star">*</span></label>
+					<input class="form-control-custom" id="educationInstitution" name="InstitutionName" value="@formEducation?.InstitutionName" maxlength="200" placeholder="Üniversite veya eğitim kurumu" required>
+				</div>
+				<div class="mb-3">
+					<label class="form-label-custom" for="educationDescription">Açıklama</label>
+					<textarea class="form-control-custom" id="educationDescription" name="Description" rows="4" maxlength="1000" placeholder="Eğitim içeriği veya kazanımlar">@formEducation?.Description</textarea>
+				</div>
+				<div class="row g-3">
+					<div class="col-md-6">
+						<label class="form-label-custom" for="educationStatus">Derece / Durum</label>
+						<input class="form-control-custom" id="educationStatus" name="Status" value="@formEducation?.Status" maxlength="80" placeholder="Örn. Mezuniyet, Akademik">
+					</div>
+					<div class="col-md-6 d-flex align-items-end">
+						<div class="form-check mb-2">
+							<input type="checkbox" class="form-check-input" id="educationIsActive" name="IsActive" value="true" checked="@(formEducation?.IsActive ?? true)">
+							<input type="hidden" name="IsActive" value="false">
+							<label class="form-check-label" for="educationIsActive">Portfolyoda göster</label>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="d-flex justify-content-end gap-2 border-top p-3">
+				<button type="button" class="btn-pastel-secondary" id="cancelEducationModal">Vazgeç</button>
+				<button type="submit" class="btn-pastel-primary"><i class="bi bi-check-lg"></i><span id="educationSubmitText">Kaydet</span></button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="modal-overlay" id="deleteEducationModal" aria-hidden="true">
+	<div class="modal-dialog-box" role="dialog" aria-modal="true" aria-labelledby="deleteEducationTitle" style="max-width: 460px;">
+		<div class="p-4">
+			<h2 class="h5 mb-2" id="deleteEducationTitle">Eğitimi Sil</h2>
+			<p class="mb-0"><strong id="deleteEducationProgram"></strong> adlı eğitimi silmek istiyor musunuz?</p>
+		</div>
+		<form asp-area="Admin" asp-controller="Education" asp-action="DeleteEducation" method="post" class="d-flex justify-content-end gap-2 border-top p-3">
+			@Html.AntiForgeryToken()
+			<input type="hidden" name="id" id="deleteEducationId">
+			<button type="button" class="btn-pastel-secondary" id="cancelEducationDelete">Hayır</button>
+			<button type="submit" class="btn btn-danger">Evet</button>
+		</form>
+	</div>
+</div>
+
+<script>
+	(() => {
+		const page = document.querySelector('[data-open-modal]');
+		const overlay = document.getElementById('educationModal');
+		const form = document.getElementById('educationForm');
+		const search = document.getElementById('educationSearch');
+		const statusFilter = document.getElementById('educationStatusFilter');
+		const sortSelect = document.getElementById('educationSort');
+		const tableBody = document.getElementById('educationTableBody');
+		const resultCount = document.getElementById('educationResultCount');
+		const emptyState = document.getElementById('educationEmptyState');
+		const emptyTitle = document.getElementById('educationEmptyTitle');
+		const emptyText = document.getElementById('educationEmptyText');
+		const deleteOverlay = document.getElementById('deleteEducationModal');
+		const deleteProgram = document.getElementById('deleteEducationProgram');
+		const deleteId = document.getElementById('deleteEducationId');
+		const cancelDelete = document.getElementById('cancelEducationDelete');
+		const rows = Array.from(tableBody.querySelectorAll('[data-education-row]'));
+		let activeDeleteButton;
+
+		const fields = {
+			id: document.getElementById('educationId'),
+			program: document.getElementById('educationProgram'),
+			institution: document.getElementById('educationInstitution'),
+			description: document.getElementById('educationDescription'),
+			status: document.getElementById('educationStatus'),
+			active: document.getElementById('educationIsActive')
+		};
+
+		const openModal = (item) => {
+			form.reset();
+			fields.id.value = item?.id || 0;
+			fields.program.value = item?.program || '';
+			fields.institution.value = item?.institution || '';
+			fields.description.value = item?.description || '';
+			fields.status.value = item?.status || '';
+			fields.active.checked = item ? item.active === 'true' : true;
+			document.getElementById('educationModalTitle').textContent = item ? 'Eğitimi Düzenle' : 'Yeni Eğitim Ekle';
+			document.getElementById('educationSubmitText').textContent = item ? 'Değişiklikleri kaydet' : 'Eğitimi ekle';
+			overlay.classList.add('show');
+			overlay.setAttribute('aria-hidden', 'false');
+			fields.program.focus();
+		};
+
+		const closeModal = () => {
+			overlay.classList.remove('show');
+			overlay.setAttribute('aria-hidden', 'true');
+		};
+
+		const closeDeleteModal = () => {
+			deleteOverlay.classList.remove('show');
+			deleteOverlay.setAttribute('aria-hidden', 'true');
+			activeDeleteButton?.focus();
+		};
+
+		const normalize = (value) => value.toLocaleLowerCase('tr-TR').trim();
+		const updateTable = () => {
+			const query = normalize(search.value);
+			const activeFilter = statusFilter.value;
+			const sortMode = sortSelect.value;
+			const sortedRows = [...rows].sort((first, second) => {
+				const firstProgram = normalize(first.dataset.program || '');
+				const secondProgram = normalize(second.dataset.program || '');
+				const firstInstitution = normalize(first.dataset.institution || '');
+				const secondInstitution = normalize(second.dataset.institution || '');
+				if (sortMode === 'program-desc') return secondProgram.localeCompare(firstProgram, 'tr');
+				if (sortMode === 'institution-asc') return firstInstitution.localeCompare(secondInstitution, 'tr');
+				return firstProgram.localeCompare(secondProgram, 'tr');
+			});
+
+			let visible = 0;
+			sortedRows.forEach((row) => {
+				const matchesSearch = normalize(row.textContent).includes(query);
+				const matchesStatus = activeFilter === 'all' || row.dataset.active === (activeFilter === 'active' ? 'true' : 'false');
+				row.hidden = !matchesSearch || !matchesStatus;
+				if (!row.hidden) visible++;
+				tableBody.appendChild(row);
+			});
+
+			resultCount.textContent = visible;
+			emptyState.hidden = visible > 0;
+			emptyTitle.textContent = rows.length === 0 ? 'Henüz eğitim kaydı yok' : 'Eşleşen kayıt bulunamadı';
+			emptyText.textContent = rows.length === 0 ? 'İlk eğitim kaydınızı ekleyerek başlayın.' : 'Arama veya filtre seçiminizi değiştirebilirsiniz.';
+		};
+
+		document.getElementById('addEducationButton').addEventListener('click', () => openModal());
+		document.getElementById('closeEducationModal').addEventListener('click', closeModal);
+		document.getElementById('cancelEducationModal').addEventListener('click', closeModal);
+		overlay.addEventListener('click', (event) => { if (event.target === overlay) closeModal(); });
+		document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && overlay.classList.contains('show')) closeModal(); });
+		document.querySelectorAll('.js-edit-education').forEach((button) => {
+			button.addEventListener('click', () => openModal(button.dataset));
+		});
+		document.querySelectorAll('.js-delete-education').forEach((button) => {
+			button.addEventListener('click', () => {
+				activeDeleteButton = button;
+				deleteId.value = button.dataset.id;
+				deleteProgram.textContent = button.dataset.program;
+				deleteOverlay.classList.add('show');
+				deleteOverlay.setAttribute('aria-hidden', 'false');
+				cancelDelete.focus();
+			});
+		});
+		cancelDelete.addEventListener('click', closeDeleteModal);
+		deleteOverlay.addEventListener('click', (event) => { if (event.target === deleteOverlay) closeDeleteModal(); });
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape' && deleteOverlay.classList.contains('show')) closeDeleteModal();
+		});
+		[search, statusFilter, sortSelect].forEach((control) => control.addEventListener(control === search ? 'input' : 'change', updateTable));
+		document.getElementById('resetEducationFilters').addEventListener('click', () => {
+			search.value = '';
+			statusFilter.value = 'all';
+			sortSelect.value = 'program-asc';
+			updateTable();
+		});
+		if (page.dataset.openModal === 'add') openModal();
+		if (page.dataset.openModal === 'edit') openModal({
+			id: fields.id.value,
+			program: fields.program.value,
+			institution: fields.institution.value,
+			description: fields.description.value,
+			status: fields.status.value,
+			active: String(fields.active.checked)
+		});
+		updateTable();
+	})();
+</script>

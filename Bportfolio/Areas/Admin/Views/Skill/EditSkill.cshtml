@@ -1,0 +1,150 @@
+@model Skill
+@{
+	var skillItems = Model.SkillItems?.ToList() ?? new List<SkillItem>();
+}
+
+<main class="page-content-area skill-page">
+	<div class="content-header-row">
+		<div>
+			<div class="projects-eyebrow"><i class="bi bi-lightning-charge"></i> PORTFOLYO İÇERİĞİ</div>
+			<h1 class="page-title">Yetenek Grubunu Düzenle</h1>
+			<p class="page-subtitle">Grup bilgilerini ve bu gruptaki yetenekleri güncelleyin.</p>
+		</div>
+		<a asp-area="Admin" asp-controller="Skill" asp-action="SkillList" class="btn-pastel-secondary">
+			<i class="bi bi-arrow-left"></i><span>Listeye dön</span>
+		</a>
+	</div>
+
+	<div class="row g-4 align-items-start">
+		<div class="col-xl-8">
+			<section class="data-table-card p-4 p-lg-5" aria-labelledby="skillFormTitle">
+				<div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+					<div class="stat-icon-wrapper icon-green"><i class="bi bi-lightning-charge"></i></div>
+					<div>
+						<h2 class="h5 mb-1" id="skillFormTitle">Grup bilgileri</h2>
+						<p class="text-secondary small mb-0">#@Model.SkillId numaralı yetenek grubunu düzenliyorsunuz.</p>
+					</div>
+				</div>
+
+				<form asp-area="Admin" asp-controller="Skill" asp-action="EditSkill" asp-route-id="@Model.SkillId" method="post" id="skillForm">
+					@Html.AntiForgeryToken()
+					<input asp-for="SkillId" type="hidden">
+					<div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+					<div class="mb-4">
+						<label asp-for="Title" class="form-label-custom">Grup adı <span class="required-star">*</span></label>
+						<input asp-for="Title" class="form-control-custom" maxlength="150" placeholder="Örn. Frontend Geliştirme" required>
+						<span asp-validation-for="Title" class="text-danger small"></span>
+					</div>
+
+					<div class="mb-4">
+						<label asp-for="Description" class="form-label-custom">Açıklama</label>
+						<textarea asp-for="Description" class="form-control-custom" rows="4" maxlength="1000" placeholder="Bu yetenek grubunu kısaca tanımlayın."></textarea>
+						<span asp-validation-for="Description" class="text-danger small"></span>
+					</div>
+
+					<div class="mb-4">
+						<label asp-for="IconUrl" class="form-label-custom">İkon bilgisi</label>
+						<input asp-for="IconUrl" class="form-control-custom" maxlength="500" placeholder="İkon sınıfı veya görsel yolu">
+						<small class="text-secondary">Örn. fa-solid fa-cloud veya wwwroot/img/icons/backend.svg.</small>
+						<span asp-validation-for="IconUrl" class="text-danger small"></span>
+					</div>
+
+					<div class="skill-items-section pt-3 border-top">
+						<div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+							<div>
+								<h3 class="h6 mb-1">Alt yetenekler</h3>
+								<p class="text-secondary small mb-0">Bu grupta gösterilecek becerileri yönetin.</p>
+							</div>
+							<button type="button" class="btn-pastel-secondary skill-add-item" id="addSkillItem"><i class="bi bi-plus-lg"></i><span>Yetenek ekle</span></button>
+						</div>
+						<div id="skillItemsList">
+							@for (var index = 0; index < skillItems.Count; index++)
+							{
+								<div class="skill-item-row" data-skill-item-row>
+									<span class="skill-item-index">@(index + 1)</span>
+									<input type="hidden" name="SkillItems[@index].SkillItemId" value="@skillItems[index].SkillItemId">
+									<input type="hidden" name="SkillItems[@index].SkillId" value="@Model.SkillId">
+									<input class="form-control-custom skill-item-input" name="SkillItems[@index].SkillItemTitle" value="@skillItems[index].SkillItemTitle" maxlength="100" placeholder="Örn. C#, ASP.NET Core" aria-label="Alt yetenek @(index + 1)">
+									<button type="button" class="btn-action-icon btn-delete js-remove-skill-item" title="Alt yeteneği kaldır" aria-label="Alt yeteneği kaldır"><i class="bi bi-x-lg"></i></button>
+								</div>
+							}
+						</div>
+						<div class="skill-items-empty" id="skillItemsEmpty" @(skillItems.Count > 0 ? "hidden" : null)>Henüz alt yetenek yok. “Yetenek ekle” ile bir satır oluşturun.</div>
+					</div>
+
+					<div class="d-flex flex-wrap justify-content-end gap-2 pt-4 mt-4 border-top">
+						<a asp-area="Admin" asp-controller="Skill" asp-action="SkillList" class="btn-pastel-secondary">Vazgeç</a>
+						<button type="submit" class="btn-pastel-primary"><i class="bi bi-check-lg"></i><span>Değişiklikleri kaydet</span></button>
+					</div>
+				</form>
+			</section>
+		</div>
+
+		<div class="col-xl-4">
+			<aside class="data-table-card p-4" aria-labelledby="skillPreviewTitle">
+				<div class="d-flex align-items-center gap-2 mb-3">
+					<i class="bi bi-eye text-success"></i>
+					<h2 class="h6 mb-0" id="skillPreviewTitle">Grup özeti</h2>
+				</div>
+				<div class="skill-summary-mark"><i class="bi bi-lightning-charge"></i></div>
+				<strong class="d-block mt-3" id="skillPreviewName">@Model.Title</strong>
+				<p class="text-secondary small mt-2 mb-3" id="skillPreviewDescription">@(string.IsNullOrWhiteSpace(Model.Description) ? "Açıklama girilmedi." : Model.Description)</p>
+				<div class="d-flex justify-content-between align-items-center pt-3 border-top text-secondary small">
+					<span>Alt yetenek sayısı</span>
+					<strong class="text-body" id="skillItemCount">@skillItems.Count</strong>
+				</div>
+			</aside>
+		</div>
+	</div>
+</main>
+
+<template id="skillItemTemplate">
+	<div class="skill-item-row" data-skill-item-row>
+		<span class="skill-item-index"></span>
+		<input type="hidden" name="SkillItems[__INDEX__].SkillItemId" value="0">
+		<input type="hidden" name="SkillItems[__INDEX__].SkillId" value="@Model.SkillId">
+		<input class="form-control-custom skill-item-input" name="SkillItems[__INDEX__].SkillItemTitle" maxlength="100" placeholder="Örn. C#, ASP.NET Core" aria-label="Alt yetenek">
+		<button type="button" class="btn-action-icon btn-delete js-remove-skill-item" title="Alt yeteneği kaldır" aria-label="Alt yeteneği kaldır"><i class="bi bi-x-lg"></i></button>
+	</div>
+</template>
+
+<script>
+	(() => {
+		const list = document.getElementById('skillItemsList');
+		const template = document.getElementById('skillItemTemplate');
+		const emptyState = document.getElementById('skillItemsEmpty');
+		const itemCount = document.getElementById('skillItemCount');
+
+		const refreshRows = () => {
+			const rows = Array.from(list.querySelectorAll('[data-skill-item-row]'));
+			rows.forEach((row, index) => {
+				row.querySelector('.skill-item-index').textContent = index + 1;
+				const titleInput = row.querySelector('.skill-item-input');
+				titleInput.name = `SkillItems[${index}].SkillItemTitle`;
+				titleInput.setAttribute('aria-label', `Alt yetenek ${index + 1}`);
+				row.querySelector('input[type="hidden"]').name = `SkillItems[${index}].SkillItemId`;
+				row.querySelectorAll('input[type="hidden"]')[1].name = `SkillItems[${index}].SkillId`;
+			});
+			itemCount.textContent = rows.length;
+			emptyState.hidden = rows.length > 0;
+		};
+
+		document.getElementById('addSkillItem').addEventListener('click', () => {
+			const html = template.innerHTML.replaceAll('__INDEX__', list.querySelectorAll('[data-skill-item-row]').length);
+			list.insertAdjacentHTML('beforeend', html);
+			refreshRows();
+			list.querySelector('[data-skill-item-row]:last-child .skill-item-input').focus();
+		});
+
+		list.addEventListener('click', (event) => {
+			const removeButton = event.target.closest('.js-remove-skill-item');
+			if (!removeButton) return;
+			removeButton.closest('[data-skill-item-row]').remove();
+			refreshRows();
+		});
+
+		document.getElementById('skillForm').addEventListener('submit', refreshRows);
+		refreshRows();
+	})();
+</script>

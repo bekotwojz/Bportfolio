@@ -1,0 +1,167 @@
+@model List<HeroSection>
+@{
+	var aboutSection = Model?.FirstOrDefault();
+	var imageName = System.IO.Path.GetFileName(aboutSection?.MainImageUrl);
+	var imageUrl = string.IsNullOrWhiteSpace(imageName) ? null : Url.Content($"~/img/{imageName}");
+}
+
+<main class="page-content-area about-editor">
+	<div class="content-header-row">
+		<div>
+			<div class="about-eyebrow"><i class="bi bi-window-stack"></i> İÇERİK YÖNETİMİ</div>
+			<h1 class="page-title">Ana Sayfa &amp; Hakkımda</h1>
+			<p class="page-subtitle">Portfolyonuzun giriş alanında görünen içerikleri düzenleyin.</p>
+		</div>
+		<div class="about-header-actions">
+			<span class="about-status"><span></span> Taslak görünümü</span>
+			<button type="button" class="btn-pastel-secondary" id="refreshAboutPreview">
+				<i class="bi bi-arrow-clockwise"></i>
+				<span>Önizlemeyi yenile</span>
+			</button>
+		</div>
+	</div>
+
+	<div class="about-intro-strip">
+		<div class="about-intro-icon"><i class="bi bi-stars"></i></div>
+		<div>
+			<strong>İlk izleniminizi şekillendirin</strong>
+			<p>Karşılama metni, ana başlık ve görsel ziyaretçilerin ana sayfada ilk karşılaştığı alanı oluşturur.</p>
+		</div>
+	</div>
+
+	<div class="about-workspace">
+		<section class="about-panel about-form-panel" aria-labelledby="aboutFormTitle">
+			<form asp-area="Admin" asp-controller="About" asp-action="EditAboutMe" asp-route-id="@aboutSection?.HeroSectionId" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="id" value="@aboutSection?.HeroSectionId" />
+			<div class="about-panel-heading">
+				<div>
+					<span class="about-section-kicker">ANA SAYFA</span>
+					<h2 id="aboutFormTitle">Giriş içeriği</h2>
+				</div>
+				<span class="about-step">01 <span>/ 01</span></span>
+			</div>
+
+			<div class="about-fields">
+				<div class="about-field">
+					<label for="aboutGreeting">Karşılama metni <span>01</span></label>
+					<input class="form-control about-input" id="aboutGreeting" name="Greeting" type="text"
+						   value="@aboutSection?.Greeting" maxlength="80" placeholder="Örn. Merhaba, ben">
+					<small>Ziyaretçiye hitap eden kısa bir giriş cümlesi.</small>
+				</div>
+
+				<div class="about-field">
+					<label for="aboutTitle">Ana başlık <span>02</span></label>
+					<input class="form-control about-input" id="aboutTitle" name="Title" type="text"
+						   value="@aboutSection?.Title" maxlength="140" placeholder="Adınızı veya uzmanlık alanınızı yazın">
+					<small>Sayfanın ana başlığı olarak öne çıkar.</small>
+				</div>
+
+				<div class="about-field">
+					<div class="about-label-row">
+						<label for="aboutDescription">Kısa tanıtım <span>03</span></label>
+						<span class="about-counter"><b id="aboutDescriptionCount">@(aboutSection?.Description?.Length ?? 0)</b> / 500</span>
+					</div>
+					<textarea class="form-control about-input" id="aboutDescription" name="Description"
+							  maxlength="500" rows="5" placeholder="Kendinizden, uzmanlık alanınızdan ve çalışma yaklaşımınızdan kısaca bahsedin.">@aboutSection?.Description</textarea>
+					<small>Okunabilir bir giriş için birkaç kısa cümle tercih edin.</small>
+				</div>
+
+				<div class="about-field">
+					<label for="aboutImage">Profil görseli <span>04</span></label>
+					<input class="form-control about-input" id="aboutImage" name="image" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+					<small>JPG, PNG veya WebP; en fazla 5 MB. Görsel seçmezseniz mevcut görsel korunur.</small>
+					@Html.ValidationMessage("image", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="about-form-footer">
+				<div class="about-save-message" id="aboutSaveMessage" role="status" aria-live="polite"></div>
+				<button type="submit" class="btn-pastel-primary">
+					<i class="bi bi-check2"></i>
+					<span>Değişiklikleri kaydet</span>
+				</button>
+			</div>
+			</form>
+		</section>
+
+		<aside class="about-panel about-preview-panel" aria-labelledby="aboutPreviewTitle">
+			<div class="about-panel-heading about-preview-heading">
+				<div>
+					<span class="about-section-kicker">CANLI GÖRÜNÜM</span>
+					<h2 id="aboutPreviewTitle">Ana sayfa önizlemesi</h2>
+				</div>
+				<span class="about-device-icon" title="Masaüstü görünümü"><i class="bi bi-display"></i></span>
+			</div>
+
+			<div class="about-preview-frame">
+				<div class="about-preview-topbar">
+					<span class="about-preview-brand"><i class="bi bi-circle-fill"></i> PORTFOLYO</span>
+					<span class="about-preview-menu"><i class="bi bi-list"></i></span>
+				</div>
+				<div class="about-preview-content">
+					<div class="about-preview-copy">
+						<span class="about-preview-greeting" id="previewGreeting">@(string.IsNullOrWhiteSpace(aboutSection?.Greeting) ? "Karşılama metniniz" : aboutSection.Greeting)</span>
+						<h3 id="previewTitle">@(string.IsNullOrWhiteSpace(aboutSection?.Title) ? "Ana başlığınız burada" : aboutSection.Title)</h3>
+						<p id="previewDescription">@(string.IsNullOrWhiteSpace(aboutSection?.Description) ? "Kısa tanıtım metniniz burada görüntülenecek." : aboutSection.Description)</p>
+						<span class="about-preview-link">Daha fazlası <i class="bi bi-arrow-right"></i></span>
+					</div>
+					<div class="about-preview-image" id="previewImagePlaceholder" hidden="@(imageUrl != null)">
+						<div class="about-preview-image-mark"><i class="bi bi-person"></i></div>
+						<span>Profil görseli</span>
+					</div>
+					<img class="about-preview-image about-preview-photo" id="previewImage" src="@imageUrl" alt="Profil görseli önizlemesi" hidden="@(imageUrl == null)">
+				</div>
+				<div class="about-preview-footer"><span></span><span></span><span></span></div>
+			</div>
+
+			<div class="about-preview-note">
+				<i class="bi bi-info-circle"></i>
+				<span>Metin ve görsel değişiklikleri önizlemede gösterilir.</span>
+			</div>
+		</aside>
+	</div>
+</main>
+
+<script>
+	(() => {
+		const greetingInput = document.getElementById('aboutGreeting');
+		const titleInput = document.getElementById('aboutTitle');
+		const descriptionInput = document.getElementById('aboutDescription');
+		const previewGreeting = document.getElementById('previewGreeting');
+		const previewTitle = document.getElementById('previewTitle');
+		const previewDescription = document.getElementById('previewDescription');
+		const descriptionCount = document.getElementById('aboutDescriptionCount');
+		const imageInput = document.getElementById('aboutImage');
+		const previewImage = document.getElementById('previewImage');
+		const placeholder = document.getElementById('previewImagePlaceholder');
+		const originalImage = previewImage.getAttribute('src');
+		let selectedImageUrl;
+
+		const updateTextPreview = () => {
+			previewGreeting.textContent = greetingInput.value.trim() || 'Karşılama metniniz';
+			previewTitle.textContent = titleInput.value.trim() || 'Ana başlığınız burada';
+			previewDescription.textContent = descriptionInput.value.trim() || 'Kısa tanıtım metniniz burada görüntülenecek.';
+			descriptionCount.textContent = descriptionInput.value.length;
+		};
+
+		const updateImagePreview = () => {
+			if (selectedImageUrl) URL.revokeObjectURL(selectedImageUrl);
+			selectedImageUrl = imageInput.files.length ? URL.createObjectURL(imageInput.files[0]) : null;
+			const imageUrl = selectedImageUrl || originalImage;
+			if (imageUrl) previewImage.src = imageUrl;
+			else previewImage.removeAttribute('src');
+			previewImage.hidden = !imageUrl;
+			placeholder.hidden = !!imageUrl;
+		};
+
+		[greetingInput, titleInput, descriptionInput].forEach((input) => {
+			input.addEventListener('input', updateTextPreview);
+		});
+		imageInput.addEventListener('change', updateImagePreview);
+		document.getElementById('refreshAboutPreview').addEventListener('click', () => {
+			updateTextPreview();
+			updateImagePreview();
+		});
+		updateTextPreview();
+	})();
+</script>

@@ -1,0 +1,85 @@
+@model Experience
+
+<main class="page-content-area">
+	<div class="content-header-row">
+		<div>
+			<div class="projects-eyebrow"><i class="bi bi-briefcase"></i> PORTFOLYO İÇERİĞİ</div>
+			<h1 class="page-title">Deneyimi Düzenle</h1>
+			<p class="page-subtitle">Deneyim bilgilerini güncelleyin ve portfolyoda gösterim durumunu belirleyin.</p>
+		</div>
+		<a asp-area="Admin" asp-controller="Experience" asp-action="ExperienceList" class="btn-pastel-secondary">
+			<i class="bi bi-arrow-left"></i>
+			<span>Listeye dön</span>
+		</a>
+	</div>
+
+	<div class="row g-4 align-items-start">
+		<div class="col-xl-8">
+			<section class="data-table-card p-4 p-lg-5" aria-labelledby="experienceFormTitle">
+				<div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+					<div class="stat-icon-wrapper icon-green"><i class="bi bi-pencil-square"></i></div>
+					<div>
+						<h2 class="h5 mb-1" id="experienceFormTitle">Deneyim bilgileri</h2>
+						<p class="text-secondary small mb-0">#@Model.ExperienceId numaralı kaydı düzenliyorsunuz.</p>
+					</div>
+				</div>
+
+				<form asp-area="Admin" asp-controller="Experience" asp-action="EditExperience" asp-route-id="@Model.ExperienceId" method="post">
+					@Html.AntiForgeryToken()
+					<input asp-for="ExperienceId" type="hidden">
+					<div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+					<div class="mb-4">
+						<label asp-for="Title" class="form-label-custom">Deneyim başlığı <span class="required-star">*</span></label>
+						<input asp-for="Title" class="form-control-custom" maxlength="200" placeholder="Örn. Yazılım Geliştirici" required>
+						<span asp-validation-for="Title" class="text-danger small"></span>
+					</div>
+
+					<div class="row g-3 mb-4">
+						<div class="col-md-6">
+							<label asp-for="CompanyName" class="form-label-custom">Kurum / şirket <span class="required-star">*</span></label>
+							<input asp-for="CompanyName" class="form-control-custom" maxlength="200" placeholder="Kurum veya şirket adı" required>
+							<span asp-validation-for="CompanyName" class="text-danger small"></span>
+						</div>
+						<div class="col-md-6">
+							<label asp-for="CategoryName" class="form-label-custom">Kategori</label>
+							<input asp-for="CategoryName" class="form-control-custom" maxlength="100" placeholder="Örn. Yazılım, Eğitim">
+							<span asp-validation-for="CategoryName" class="text-danger small"></span>
+						</div>
+					</div>
+
+					<div class="mb-4">
+						<label asp-for="Description" class="form-label-custom">Açıklama</label>
+						<textarea asp-for="Description" class="form-control-custom" rows="6" maxlength="2000" placeholder="Sorumluluklarınızı, çalışmalarınızı ve öne çıkan katkılarınızı yazın."></textarea>
+						<span asp-validation-for="Description" class="text-danger small"></span>
+					</div>
+
+					<div class="d-flex flex-wrap justify-content-end gap-2 pt-3 border-top">
+						<a asp-area="Admin" asp-controller="Experience" asp-action="ExperienceList" class="btn-pastel-secondary">Vazgeç</a>
+						<button type="submit" class="btn-pastel-primary"><i class="bi bi-check-lg"></i><span>Değişiklikleri kaydet</span></button>
+					</div>
+				</form>
+			</section>
+		</div>
+
+		<div class="col-xl-4">
+			<aside class="data-table-card p-4" aria-labelledby="experienceVisibilityTitle">
+				<div class="d-flex align-items-center gap-2 mb-3">
+					<i class="bi bi-eye text-success"></i>
+					<h2 class="h6 mb-0" id="experienceVisibilityTitle">Portfolyo görünürlüğü</h2>
+				</div>
+				<p class="text-secondary small mb-3">Kaydın ziyaretçilere gösterilip gösterilmeyeceğini seçin.</p>
+				<div class="p-3 rounded border bg-light">
+					<div class="form-check form-switch mb-0">
+						<input asp-for="IsActive" class="form-check-input" role="switch">
+						<label asp-for="IsActive" class="form-check-label fw-semibold">Aktif olarak göster</label>
+					</div>
+				</div>
+				<div class="d-flex align-items-start gap-2 mt-3 text-secondary small">
+					<i class="bi bi-info-circle mt-1"></i>
+					<span>Pasif kayıtlar yönetim listesinde kalır, portfolyo içeriğinde gösterilmez.</span>
+				</div>
+			</aside>
+		</div>
+	</div>
+</main>
